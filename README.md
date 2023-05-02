@@ -1,31 +1,17 @@
-# Project template for Spine Toolbox
+# Cluster job files
 
-This is a template repository for Git-versioned Spine Toolbox projects.
-To create a new GitHub repository based on this template, click on the **Use this template** button.
-
-## Ignored files
-
-Some files are ignored by default:
-- output files created by project execution
-- temporary and log files
-
-Other project-specific ignores can be added to the [.gitignore](.gitignore) file.
+These files are supposed to help running SpineOpt on a cluster.
 
 
 ## Folder strucure
 
-### `data`
+### `DTU`
 
-This folder could be used for storing the original data files. 
-Please add metadata and licensing information as well.
-
-
-### `scripts`
-
-This folder could be used for storing processing scripts and their tool specifications.
+This folder contains the .job file which runs the different scenarios defined in the database in a loop. The .submit file contains the server settings. Each job calls the .julia file. The results are written to the output database, the model can be printed. You will need an input folder containing the input database and an output folder containing the output database (there is also another input folder in there saving the used input database). This might not be most efficient but it works (for me).
 
 
-## License and Terms of Use
+### `ETH`
 
-The Spine Toolbox project example provided here can be used without any 
-limitations. This does not necessarily apply to any data files contained within.
+(Hopefully to come.)
+
+

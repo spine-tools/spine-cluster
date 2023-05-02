@@ -1,0 +1,8 @@
+[deps]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Gurobi = "2e9cd046-0924-5485-92f1-d5272153d98b"
+HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+SCIP = "82193955-e24f-5292-bf16-6f2c5261a85f"
+SpineInterface = "0cda1612-498a-11e9-3c92-77fa82595a4f"
+SpineOpt = "0d8fc150-4032-4b6e-9540-20efcb304861"

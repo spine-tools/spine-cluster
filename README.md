@@ -12,6 +12,6 @@ This folder contains the .job file which runs the different scenarios defined in
 
 ### `ETH Zurich Euler`
 
-This folder contains a `Julia` script for installing SpineOpt.jl and the associated packages at the latest verion on the Euler cluster at ETH Zurich. There is also a `bash` script to run the julia script but it is not necessary. Scripts to run SpineOpt models will come soon ... 
+This folder contains a `Julia` script for installing SpineOpt.jl and the associated packages at the latest version on the Euler cluster at ETH Zurich. There is also a corresponding `bash` script to run that Julia script despite not necessarily being needed. Scripts to run SpineOpt models will come soon ... 
 
 

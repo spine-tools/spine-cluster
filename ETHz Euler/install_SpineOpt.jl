@@ -1,34 +1,50 @@
 """
-Author: Huang, Jiangyi (ETH Zurich)
-Date: 2024-Mar-16
-This script installs the lastest development version of SpineOpt.jl associated packages on ETHz Euler cluster.
+Author: Huang, Jiangyi (Chair of Energy System Analysis, ETH Zurich)
+Date: 2025-Aug-15
+
+- Install SpineOpt.jl and associated julia packages
+- Config PyCall.jl with using the activated conda python environment
+- Install Spine-Database-API into the conda python confired to julia
 """
 
 #=
-Step 1: Before running this script, 
-one needs to load the following modules on Euler using the command below in bash:
-    module load gurobi gcc/11.4.0 julia/1.10.2 eth_proxy
+Step 1: Before running this script, in bash terminal
+- 1.1 system modules
+    module load gurobi  # since we want to use Gurobi solver
+    module unload python    # default python that would conflic with `conda`
 
-To check which julia is available on Euler, use the command below in bash:
-    module spider julia
+- 1.2 (Only needed in sbatch scripts) Ensure `conda` command available
+    source $HOME/.bashrc
+eval "$(conda shell.bash hook)"
 
-Step 2: Default command to run this script on Euler in bash: 
+- 1.3 (Optional) Ensure `conda xx` demands get executed in bash (latest shatch system seem to have this by default)
+    eval "$(conda shell.bash hook)"
+    
+    Reasons:
+    - https://docs.conda.io/projects/conda/en/latest/dev-guide/deep-dives/activation.html?highlight=conda%20activate#conda-activate
+    - what does `eval` do: https://unix.stackexchange.com/a/156993   
+
+- 1.3 use the dedicated conda python environment
+    conda create -n julia-spineopt python -y
+    conda activate julia-spineopt
+
+Step 2: Default command to run this script in bash: 
 julia /path/to/install_SpineOpt.jl, e.g.
-    julia $HOME/Projects/SpineOptModels/install_SpineOpt.jl
+    julia $HOME/Tools/SpineOpt/install_SpineOpt.jl
 =#
 
 # Use the directory of this script as the default directory for
-# the julia virtual environment that accommodates SpineOpt.jl and the related packages
+# the julia virtual environment that accommodates SpineOpt.jl and the associated packages
 path_to_SpineOpt_env = @__DIR__
 
 # (Optional Step 2) 
 # Specify the directory for the julia virtual environment in the script
-target_directory = ENV["HOME"]*"/Projects/SpineOptModels"
+target_directory = ENV["HOME"]*"/Tools/SpineOpt"
 !isdir(target_directory) ? mkdir(target_directory) : path_to_SpineOpt_env = target_directory
 
 # (Optional Step 2) 
 #= Specify the directory for the julia virtual environment in the first argument on running this script in bash, e.g.
-    julia $HOME/install_SpineOpt.jl $HOME/Projects/SpineOptModels
+    julia $HOME/install_SpineOpt.jl $HOME/Tools/SpineOpt
 =#
 isempty(ARGS) ? nothing : path_to_SpineOpt_env = ARGS[1]
 
@@ -43,40 +59,17 @@ Pkg.add("Gurobi"); Pkg.build("Gurobi")
 Pkg.add(url="https://github.com/Spine-tools/SpineInterface.jl.git", rev="master")
 Pkg.add(url="https://github.com/Spine-tools/SpineOpt.jl.git", rev="master")
 ## Python-related packages
-Pkg.add("Conda")
 Pkg.add("PyCall")
 ## Update all installed packages to the latest version as Pkg.add() does not update the packages
 Pkg.update()
 
-# Initialise the conda environment of Julia to the latest version
-Pkg.build("Conda")
-using Conda
-@show Conda.ROOTENV
-println("Conda.jl should use Julia's own Python distribution, i.e.")
-println("\"Conda.ROOTENV\" should be \"$(homedir())/.julia/conda/3\"")
-# cf. https://github.com/JuliaPy/Conda.jl#installation-with-special-characters-in-user-names
-# To avoid environment inconsistency due to package `spinedb-api` on update
-Conda.pip_interop(false)
-# Use `conda config --show` and lookup the "pip_interop_enabled" parameter
-Conda.update(); Conda.clean()
-# To manage the pip installed packages listed by `Conda.list()`, see the docs below:
-# 1. https://github.com/JuliaPy/Conda.jl#conda-and-pip
-# 2. https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/pip-interoperability.html#improving-interoperability-with-pip
-
-# Use Julia's own Python distribution
-ENV["PYTHON"] = ""; Pkg.build("PyCall")
-# Obtain the path to the Python executable of Julia: most likely "$HOME/.julia/conda/3/bin/python"
+# A. Config `PyCall.jl` -> use the activated conda python
+ENV["PYTHON"] = Sys.which("python"); Pkg.build("PyCall")
 using PyCall
-PythonForSpineDB_API = PyCall.pyprogramname
-@show PyCall.pyprogramname
-println("PyCall.jl should use Julia's own Python distribution, i.e.")
-println("\"PyCall.pyprogramname\" should be \"$(homedir())/.julia/conda/3/bin/python\"")
+PythonForSpineDB_API = PyCall.python
+@show PyCall.python
+println("PyCall.jl should use the activated conda python, i.e.")
+println("\'PyCall.python\' should be \'$(ENV["CONDA_PREFIX"])/bin/python\'.")
 
-command_install_SpineDB_API = PythonForSpineDB_API*" -m pip install --user 'git+https://github.com/Spine-project/Spine-Database-API@master'"
-
-Conda.pip_interop(true)
+command_install_SpineDB_API = PythonForSpineDB_API * " -m pip install --user 'git+https://github.com/Spine-project/Spine-Database-API@master'"
 run(`bash -c $command_install_SpineDB_API`)
-# Use Conda.list() in Julia to check whether `spinedb-api` is installed
-
-# To avoid environment inconsistency due to the pip installed package `spinedb-api` during update in other circumstances
-Conda.pip_interop(false)
